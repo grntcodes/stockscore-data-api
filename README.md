@@ -2,7 +2,7 @@
 
 This public repository contains the **limited developer API contract and reference client**. The StockScore application, scoring engine, collector, trading code, and provider adapters remain in a separate private repository.
 
-**Access is not open yet.** The developer endpoint returns HTTP 503 until StockScore enables key-based access. No public API keys have been issued. To request a key when the preview opens, email **CONTACT_ADDRESS_REPLACE_BEFORE_PUBLICATION** with your intended use. Keys are issued manually; sending an email does not grant access automatically.
+**Access is not open yet.** The developer endpoint returns HTTP 503 until StockScore enables key-based access. No public API keys have been issued. Key requests will be accepted by email when the preview opens; the verified request address will be published here first. Keys will be issued manually, without automatic approval.
 
 The product's browser-facing endpoints support [stockscore.pro](https://stockscore.pro) itself. They are not the key-gated developer API described here.
 
