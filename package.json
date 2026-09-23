@@ -1,0 +1,11 @@
+{
+  "name": "stockscore-data-api-client",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "Reference client and contract for the limited StockScore Data API preview",
+  "engines": { "node": ">=22" },
+  "exports": { ".": "./src/index.js" },
+  "scripts": { "test": "node --test" },
+  "license": "MIT"
+}

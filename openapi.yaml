@@ -1,0 +1,115 @@
+openapi: 3.1.0
+info:
+  title: StockScore Data API
+  version: 1.0.0-preview
+  description: Key-gated, read-only market-evidence preview. Access is not open until StockScore issues keys.
+servers:
+  - url: https://stockscore.pro
+paths:
+  /api/v1/asset:
+    get:
+      summary: Get the latest available sourced asset scorecard
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-z0-9-]{3,50}$'
+          example: prestock-anthropic
+      responses:
+        '200':
+          description: Sourced asset evidence. Scores and prices may be null when inputs are unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetResponse'
+        '400':
+          description: Invalid asset ID
+        '401':
+          description: Missing or invalid API key
+        '404':
+          description: Asset unavailable
+        '503':
+          description: Preview closed or upstream evidence unavailable
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Manually issued API key. Keep it server-side.
+  schemas:
+    AssetResponse:
+      type: object
+      required: [schemaVersion, asset, observation, market, sources, note]
+      properties:
+        schemaVersion:
+          const: '1'
+        asset:
+          type: object
+          description: Token identity and official provider URL.
+          additionalProperties: true
+          required: [id, type, company, ticker, token, issuer, mint, officialUrl]
+          properties:
+            id: { type: string }
+            type: { enum: [public, prestock] }
+            company: { type: string }
+            ticker: { type: string }
+            token: { type: string }
+            issuer: { type: string }
+            mint: { type: [string, 'null'] }
+            officialUrl: { type: string, format: uri }
+        observation:
+          type: object
+          description: Latest committed observation where available; missing score inputs remain null.
+          additionalProperties: true
+          required: [score, confidence, rating, categories, methodologyVersion, dataTimestamp]
+          properties:
+            id: { type: [string, 'null'] }
+            previousId: { type: [string, 'null'] }
+            createdAt: { type: [string, 'null'], format: date-time }
+            scoreChange: { type: [number, 'null'] }
+            score: { type: [number, 'null'], minimum: 0, maximum: 100 }
+            range:
+              type: [array, 'null']
+              items: { type: number }
+              minItems: 2
+              maxItems: 2
+            confidence: { enum: [high, medium, low] }
+            rating: { type: string }
+            categories: { type: object, additionalProperties: true }
+            methodologyVersion: { type: string }
+            dataTimestamp: { type: [string, 'null'], format: date-time }
+        market:
+          type: object
+          description: Observed values, not guaranteed execution prices.
+          additionalProperties: true
+          required: [observedPoolPriceUsd, referencePriceUsd, referenceLabel, referenceKind, premiumDiscountPct, poolDepthUsd, volume24hUsd, retrievedAt]
+          properties:
+            observedPoolPriceUsd: { type: [number, 'null'] }
+            referencePriceUsd: { type: [number, 'null'] }
+            referenceLabel: { type: string }
+            referenceKind: { type: [string, 'null'], enum: [independent, provider-mark, null] }
+            premiumDiscountPct: { type: [number, 'null'] }
+            poolDepthUsd: { type: [number, 'null'] }
+            volume24hUsd: { type: [number, 'null'] }
+            retrievedAt: { type: string, format: date-time }
+        sources:
+          type: object
+          description: Named scored inputs, each with source and observation time.
+          additionalProperties:
+            type: object
+            required: [value, source, observedAt]
+            properties:
+              value: { type: number }
+              source: { type: string }
+              provider: { type: string }
+              venue: { type: string }
+              observedAt: { type: string, format: date-time }
+              retrievedAt: { type: string, format: date-time }
+              freshness: { type: string }
+              confidence: { type: string }
+              displayConstraint: { type: string }
+        note: { type: string }
